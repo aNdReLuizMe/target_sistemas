@@ -1,26 +1,12 @@
 <?php
 
-/**
- * 1) Dado a sequência de Fibonacci, onde se inicia por 0 e 1 e o próximo valor sempre será a soma dos 2 valores
- * anteriores (exemplo: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34...), escreva um programa na linguagem que desejar onde,
- * informado um número, ele calcule a sequência de Fibonacci e retorne uma mensagem avisando se o número 
- * informado pertence ou não a sequência. 
- * 
- * IMPORTANTE: Esse número pode ser informado através de qualquer entrada de sua preferência ou pode ser
- * previamente definido no código;
- * 
- *  Resposta: ↓↓↓↓↓↓↓↓
- */
-
-
+declare(strict_types=1);
 
 /**
- * Aqui verificamos se o número pertence à sequência de Fibonacci.
- * Para que essa verificiação seja eficiente, de maneira curta e elegante, utilizamos o cálculo direto
- * para o número áureo e o aplicamos na fórmula de Binet.
+ * Verifica se um número pertence à sequência de Fibonacci.
  *
- * @param int $number => número a ser verificado
- * @return bool => se o número pertence à sequência? verdadeiro : falso
+ * @param int $number
+ * @return bool
  */
 function isFibonacci(int $number): bool
 {
@@ -28,18 +14,23 @@ function isFibonacci(int $number): bool
       return false;
    }
 
-   $sqrt5 = sqrt(5);
-   $phi = (1 + $sqrt5) / 2;
-   $a = pow($phi, $number) / $sqrt5;
+   $a = 0;
+   $b = 1;
 
-   return abs($a - round($a)) < 1e-10;
+   while ($a < $number) {
+      $temp = $a;
+      $a = $b;
+      $b = $temp + $b;
+   }
+
+   return $a === $number;
 }
 
 /**
- * Função para gerar a sequência de Fibonacci até o limite especificado.
+ * Criamos uma sequência de Fibonacci até o número digitado.
  *
- * @param int $limit => maior número que desejamos incluir na sequência
- * @return array => a sequência de Fibonacci gerada até o $limit
+ * @param int $limit
+ * @return array
  */
 function generateFibonacciSequence(int $limit): array
 {
@@ -51,9 +42,7 @@ function generateFibonacciSequence(int $limit): array
 }
 
 /**
- * Obtém um número válido do usuário via CLI.
- *
- * @return int => retorno do número *válido* inserido pelo usuário como inteiro
+ * @return int
  */
 function getValidNumber(): int
 {
@@ -61,12 +50,29 @@ function getValidNumber(): int
       echo "Digite um número inteiro não-negativo: ";
       $input = trim(fgets(STDIN));
    } while (!ctype_digit($input));
-
    return (int)$input;
 }
 
 /**
- * Função main para executar o script, verificando se a entrada é através de CLI ou por método GET.
+ * Processa o número e exibe o resultado.
+ *
+ * @param int $number
+ */
+function processNumber(int $number): void
+{
+   if (isFibonacci($number)) {
+      echo "O número $number pertence à sequência de Fibonacci." . PHP_EOL;
+   } else {
+      $sequence = generateFibonacciSequence($number);
+      echo "O número $number não pertence à sequência de Fibonacci." . PHP_EOL;
+      echo "A sequência de Fibonacci até $number é: " . implode(', ', $sequence) . "." . PHP_EOL;
+   }
+}
+
+/**
+ * Função principal para executar o script.
+ *
+ * Verifica se a entrada é através de CLI ou por método GET.
  */
 function main(): void
 {
@@ -76,25 +82,11 @@ function main(): void
       $number = filter_input(INPUT_GET, 'number', FILTER_VALIDATE_INT, [
          'options' => ['min_range' => 0]
       ]);
-
       if ($number === false) {
          die("Por favor, insira um número válido (inteiro não-negativo).");
       }
    }
-
-   if (isFibonacci($number)) {
-      echo "O número $number pertence à sequência de Fibonacci.\n";
-   } else {
-      $sequence = generateFibonacciSequence($number);
-      echo "O número $number não pertence à sequência de Fibonacci.\n";
-      echo "A sequência de Fibonacci até $number é: " . implode(', ', $sequence) . ".\n";
-   }
+   processNumber($number);
 }
-
-/**
- * Lembrando que para executar o script via terminal ou shell é necessário ter o php instalado,
- * e rodar o comando 'php ts_fibonacci.php'
- * Se for executar via web precisa iniciar um servidor local.
- */
 
 main();

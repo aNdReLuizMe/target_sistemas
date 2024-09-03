@@ -1,85 +1,134 @@
 <?php
 
-/**
- * 2) Escreva um programa que verifique, em uma string, a existência da letra ‘a’,
- * seja maiúscula ou minúscula, além de informar a quantidade de vezes em que ela ocorre.
- * 
- * IMPORTANTE: Essa string pode ser informada através de qualquer entrada de sua preferência
- * ou pode ser previamente definida no código;
- * 
- *  Resposta: ↓↓↓↓↓↓↓↓
- */
-
+declare(strict_types=1);
 
 /**
- * Verifica a ocorrênica da letra 'A' no texto (sem distinção entre maiúscula ou minúscula).
- *
- * @param string $text
- * @return array
+ * Analisaremos a ocorrência da letra 'A' em uma palavra, frase ou texto.
  */
-function analyzeLetterA(string $text): array
+class LetterAAnalyzer
 {
-   $lowercaseText = strtolower($text);
-   $totalCount = substr_count($lowercaseText, 'a');
+   private string $text;
 
-   if ($totalCount === 0) {
-      return ['found' => false];
+   public function __construct(string $text)
+   {
+      $this->text = $text;
    }
 
-   $uppercaseCount = substr_count($text, 'A');
-   $lowercaseCount = substr_count($text, 'a');
+   /**
+    * Realiza a análise da ocorrência da letra 'A'.
+    *
+    * @return array<string, int|bool>
+    */
+   public function analyze(): array
+   {
+      $lowercaseText = strtolower($this->text);
+      $totalCount = substr_count($lowercaseText, 'a');
 
-   return [
-      'found' => true,
-      'total' => $totalCount,
-      'uppercase' => $uppercaseCount,
-      'lowercase' => $lowercaseCount
-   ];
+      if ($totalCount === 0) {
+         return ['found' => false];
+      }
+
+      return [
+         'found' => true,
+         'total' => $totalCount,
+         'uppercase' => substr_count($this->text, 'A'),
+         'lowercase' => substr_count($this->text, 'a')
+      ];
+   }
 }
 
 /**
- * MOstra o resultado das análises de maneira formatada.
- *
- * @param array $results
+ * Exibe os resultados da análise.
  */
-function displayResults(array $results): void
+class ResultDisplayer
 {
-   if (!$results['found']) {
-      echo "Letra 'A' não encontrada no texto.\n";
-      return;
+   /**
+    * Mostra o resultado das análises de maneira formatada.
+    *
+    * @param array<string, int|bool> $results
+    */
+   public function display(array $results): void
+   {
+      if (!$results['found']) {
+         echo "Letra 'A' não encontrada no texto.\n";
+         return;
+      }
+
+      $this->displayOccurrences($results);
    }
 
-   if ($results['total'] === 1) {
-      $case = $results['uppercase'] === 1 ? "maiúscula" : "minúscula";
-      echo "Há apenas uma letra 'A' {$case}.\n";
-   } elseif ($results['uppercase'] > 0 && $results['lowercase'] === 0) {
-      $conjugation = $results['uppercase'] === 1 ? "ocorrência" : "ocorrências";
-      echo "Há apenas letras 'A' maiúsculas ({$results['uppercase']} {$conjugation}).\n";
-   } elseif ($results['lowercase'] > 0 && $results['uppercase'] === 0) {
-      $conjugation = $results['lowercase'] === 1 ? "ocorrência" : "ocorrências";
-      echo "Há apenas letras 'a' minúsculas ({$results['lowercase']} {$conjugation}).\n";
-   } else {
-      $conjugationUppercase = $results['uppercase'] === 1 ? "ocorrência" : "ocorrências";
-      $conjugationLowercase = $results['lowercase'] === 1 ? "ocorrência" : "ocorrências";
+   /**
+    * Exibe as ocorrências da letra 'A'.
+    *
+    * @param array<string, int> $results
+    */
+   private function displayOccurrences(array $results): void
+   {
+      $uppercase = $results['uppercase'];
+      $lowercase = $results['lowercase'];
 
-      if ($results['uppercase'] === 1 && $results['lowercase'] === 1) {
-         echo "Maiúsculas: 1 ocorrência, \n" . "Minúsculas: 1 ocorrência.\n";
+      if ($results['total'] === 1) {
+         $case = $uppercase === 1 ? "maiúscula" : "minúscula";
+         echo "Há apenas uma letra 'A' {$case}.\n";
+         return;
+      }
+
+      if ($uppercase > 0 && $lowercase === 0) {
+         $this->displaySingleCaseOccurrences($uppercase, true);
+      } elseif ($lowercase > 0 && $uppercase === 0) {
+         $this->displaySingleCaseOccurrences($lowercase, false);
       } else {
-         echo "Há letras 'A' maiúsculas e minúsculas, sendo:\n";
-         echo "Maiúsculas: {$results['uppercase']} {$conjugationUppercase},\n";
-         echo "Minúsculas: {$results['lowercase']} {$conjugationLowercase}.\n";
+         $this->displayMixedCaseOccurrences($uppercase, $lowercase);
       }
    }
+
+   /**
+    * Exibe ocorrências de um único caso (maiúsculo ou minúsculo).
+    */
+   private function displaySingleCaseOccurrences(int $count, bool $isUppercase): void
+   {
+      $case = $isUppercase ? "maiúsculas" : "minúsculas";
+      $conjugation = $this->getConjugation($count);
+      echo "Há apenas letras 'A' {$case} ({$count} {$conjugation}).\n";
+   }
+
+   /**
+    * Exibe ocorrências mistas (maiúsculas e minúsculas).
+    */
+   private function displayMixedCaseOccurrences(int $uppercase, int $lowercase): void
+   {
+      if ($uppercase === 1 && $lowercase === 1) {
+         echo "Maiúsculas: 1 ocorrência,\nMinúsculas: 1 ocorrência.\n";
+         return;
+      }
+
+      echo "Há letras 'A' maiúsculas e minúsculas, sendo:\n";
+      echo "Maiúsculas: {$uppercase} {$this->getConjugation($uppercase)},\n";
+      echo "Minúsculas: {$lowercase} {$this->getConjugation($lowercase)}.\n";
+   }
+
+   /**
+    * Retorna a conjugação correta para o número de ocorrências.
+    */
+   private function getConjugation(int $count): string
+   {
+      return $count === 1 ? "ocorrência" : "ocorrências";
+   }
 }
 
 /**
- * Chamada do input para entrada do texto pelo usuário
+ * Função principal para executar o programa.
  */
-echo "Entre com uma letra, palavra ou frase: ";
-$input = trim(fgets(STDIN));
+function main(): void
+{
+   echo "Entre com uma letra, palavra ou frase: ";
+   $input = trim(fgets(STDIN) ?: '');
 
-/**
- * Retorno da análise e mostra de resultados
- */
-$results = analyzeLetterA($input);
-displayResults($results);
+   $analyzer = new LetterAAnalyzer($input);
+   $results = $analyzer->analyze();
+
+   $displayer = new ResultDisplayer();
+   $displayer->display($results);
+}
+
+main();
